@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://request-maneger-ibqba9d5o-tamilselvancinnaiyans-projects.vercel.app/api/:path*"
+    }
+  ]
+}
