@@ -1,6 +1,7 @@
-const API_URL = "http://localhost:4001/api";
+const API_URL = import.meta.env.VITE_SERVER_URL;
 
 export async function apiRequest(path, method = "GET", body, token) {
+  console.log('import.meta.env.SERVER_URL',   import.meta.env.VITE_SERVER_URLcc)
   const res = await fetch(`${API_URL}${path}`, {
     method,
     headers: {
