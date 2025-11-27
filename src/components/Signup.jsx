@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { apiRequest } from "../api";
 
 
@@ -12,13 +12,45 @@ export default function Signup({ setScreen }) {
     manager_id: "",
   });
 
+  const [managers, setManagers] = useState([]);
+  const [isLoadingManagers, setIsLoadingManagers] = useState(false);
+
+  useEffect(() => {
+    if (form.role === "EMPLOYEE") {
+      loadManagers();
+    }
+  }, [form.role]);
+
+  const loadManagers = async () => {
+    try {
+      setIsLoadingManagers(true);
+
+      const res = await apiRequest("/auth/managers", "GET");
+
+      const users = res?.users || [];
+
+      if (users.length === 0) {
+        setManagers([]);
+        return;
+      }
+
+      setManagers(users);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to load managers");
+      setManagers([]);
+    } finally {
+      setIsLoadingManagers(false);
+    }
+  };
+
   const signup = async () => {
     try {
       await apiRequest("/auth/signup", "POST", {
         ...form,
-        manager_id: form.manager_id || null,
+        manager_id: form.manager_id || null, 
       });
-      alert("Signup successful! Pleas login again");
+      alert("Signup successful! Please login again");
       setScreen("login"); 
 
     } catch (err) {
@@ -45,11 +77,31 @@ export default function Signup({ setScreen }) {
       </select>
 
       {form.role === "EMPLOYEE" && (
-        <input
-          style={input}
-          placeholder="Manager ID"
-          onChange={(e) => setForm({ ...form, manager_id: e.target.value })}
-        />
+        <>
+          {isLoadingManagers ? (
+            <div style={{ marginBottom: "12px" }}>
+              Loading managers...
+            </div>
+          ) : managers.length === 0 ? (
+            <div style={{ marginBottom: "12px", color: "red" }}>
+              No managers available
+            </div>
+          ) : (
+            <select
+              style={input}
+              onChange={(e) =>
+                setForm({ ...form, manager_id: e.target.value })
+              }
+            >
+              <option value="">Select Manager</option>
+              {managers.map((m) => (
+                <option key={m.emp_id} value={m.emp_id}>
+                  {m.name} - {m.emp_id}
+                </option>
+              ))}
+            </select>
+          )}
+        </>
       )}
 
       <button style={btn} onClick={signup}>Signup</button>
